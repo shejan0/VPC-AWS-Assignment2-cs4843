@@ -7,7 +7,7 @@ For most businesses, it is required that your entire business internet presence 
 
 To replicate such a situation, availabilty zones on Amazon Web Services are used to replicate distanted systems, of which are in a VPC, or a Virtual Private Cloud network, which conjoins the entire infrastructure into one colloquial net, this way a single domain name can be used. 
 
-###Files
+## Files
 
 - [Network](network.yaml)
 - [Servers and security system](server&#32;and&#32;security.yaml)
