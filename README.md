@@ -2,6 +2,7 @@
 ## By Shejan Shuza
 ### Cloud Computing
 
+
 These 3 files specify an architecture that has 2 subnets in 2 availability zones.
 
 In each availability zone, there is one public and private subnet. 
@@ -12,4 +13,4 @@ In the private subnet of each availabilty zone, which is attached to the NAT Gat
 
 The idea of the architecture is that the public webserver on each availability zone can get into Database server through the NAT Gateway, and can commit mySQL transactions to the database EC2 instance. 
 
-![]()
+![Diagram](Diagram.drawio.png)
