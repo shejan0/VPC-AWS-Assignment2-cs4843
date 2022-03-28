@@ -21,7 +21,7 @@ In the public subnet of each availability zone, which is attached directly to a 
 
 In the private subnet of each availabilty zone, which is attached to the NAT Gateway of the public subnet, there exists two EC2 instances. One with a installation of Apache2 webserver to host a website, and one with a installation of MySQL Server and 10GB of EBS storage attached. There also exists routing tables for going through the NAT gateway, and passing traffic into the public subnet.
 
-The idea of the architecture is that the public webserver on each availability zone can get into Database server through the NAT Gateway, and can commit mySQL transactions to the database EC2 instance. 
+The use of the NAT Gateway ensures that the outside world cannot get into anything inside the private subnet, but the private subnet can talk to the outside world, traffic for the private subnet can first hit the NAT and pass it on depending on the security rules of the NAT gateway itself.
 
 ![Diagram](Diagram.drawio.png)
 
