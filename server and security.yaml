@@ -63,7 +63,7 @@ Resources:
           ToPort: 3306
           CidrIp: 0.0.0.0/0
   #EC2 instance in Public Subnet 1
-  PublicWebServerInstance1:
+  PublicJumpInstance1:
     Type: AWS::EC2::Instance
     Properties: 
       InstanceType: t2.micro
@@ -77,12 +77,7 @@ Resources:
             #SubnetId: !ImportValue "PubSubnet1"
             SubnetId: !Ref PublicSubnet1Ref
             #SubnetId:  !Ref PublicSubnet1
-      UserData:
-          Fn::Base64: !Sub |
-            #!/bin/bash
-            yum update -y
-            yum install -y httpd
-            systemctl start httpd
+
   #EIPPubWebServerInstance1:
   #  Type: 'AWS::EC2::EIP'
   #EIPAssocPubWebServerInstance1:
@@ -91,7 +86,7 @@ Resources:
   #    InstanceId: !Ref PublicWebServerInstance1
   #    EIP: !Ref EIPPubWebServerInstance1
   #EC2 instance in Public Subnet 2
-  PublicWebServerInstance2:
+  PublicJumpInstance2:
     Type: AWS::EC2::Instance
     Properties: 
       InstanceType: t2.micro
@@ -105,12 +100,6 @@ Resources:
             #SubnetId: !ImportValue "PubSubnet2"
             SubnetId: !Ref PublicSubnet2Ref
             #SubnetId: !Ref PublicSubnet2
-      UserData:
-          Fn::Base64: !Sub |
-            #!/bin/bash
-            yum update -y
-            yum install -y httpd
-            systemctl start httpd
   #EIPPubWebServerInstance2:
   #  Type: 'AWS::EC2::EIP'
   #EIPAssocPubWebServerInstance2:
@@ -140,6 +129,7 @@ Resources:
             yum install -y httpd
             systemctl start httpd
   #Not listing EIP for this instance
+
   #EC2 instance in private Subnet 2
   PrivateWebServerInstance2:
     Type: AWS::EC2::Instance
@@ -162,5 +152,4 @@ Resources:
             yum install -y httpd
             systemctl start httpd
   #Not listing EIP for this instance
-
-  #May need to list instances for the storage environment
+Outputs:
