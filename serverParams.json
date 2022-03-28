@@ -1,0 +1,30 @@
+[
+    {
+        "ParameterKey": "KeyName",
+        "ParameterValue":"BruhAWS"
+    },
+    {
+        "ParameterKey":"AMItoUse",
+        "ParameterValue":"ami-064ff912f78e3e561"
+    },
+    {
+        "ParameterKey":"NetworkVPC",
+        "ParameterValue": "vpc-0ae65d670bc5ccd9c"
+    },
+    {
+        "ParameterKey":"PublicSubnet1Ref",
+        "ParameterValue":"subnet-021343cb8d158fd17"
+    },
+    {
+        "ParameterKey":"PublicSubnet2Ref",
+        "ParameterValue": "subnet-02d967bfbafcc7044"
+    },
+    {
+        "ParameterKey":"PrivateSubnet1Ref",
+        "ParameterValue": "subnet-064a64be96a287df6"
+    },
+    {
+        "ParameterKey":"PrivateSubnet2Ref",
+        "ParameterValue": "subnet-03fb5f518a15a93c2"
+    }
+]

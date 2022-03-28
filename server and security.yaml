@@ -1,0 +1,166 @@
+Description: >
+  Set up web server infrastructure (non-load balanced) between private and public subnets
+Parameters:
+  KeyName:
+      Description: Name of an existing EC2 KeyPair to enable SSH access to the instances
+      Type: 'AWS::EC2::KeyPair::KeyName'
+      ConstraintDescription: must be the name of an existing EC2 KeyPair.
+  AMItoUse:
+      Description: AMI to use for our base image
+      Type: String
+  #The following are outputs from the previous creation, there is a way to dynamically grab them using SSM, but its really complicated
+  NetworkVPC:
+    Description: VPC from previous creation
+    Type: String
+  PublicSubnet1Ref:
+    Description: Public Subnet 1 from previous creation
+    Type: String
+  PublicSubnet2Ref:
+    Description: Public Subnet 2 from previous creation
+    Type: String
+  PrivateSubnet1Ref:
+    Description: Private Subnet 1 from previous creation
+    Type: String
+  PrivateSubnet2Ref:
+    Description: Private Subnet 2 from previous creation
+    Type: String
+Resources:
+  #Shared information
+  SecurityGroupPublic:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+        GroupDescription: Allow incoming SSH, HTTP, and HTTPS calls to web servers
+        #VpcId: !ImportValue "NetVPC"
+        VpcId: !Ref NetworkVPC
+        #VpcId: !Ref VPC
+        SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+  SecurityGroupPrivate:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+        GroupDescription: Allow incoming SSH, HTTP, and HTTPS calls to web servers
+        #VpcId: !ImportValue "NetVPC"
+        VpcId: !Ref NetworkVPC
+        #VpcId: !Ref VPC
+        SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 3306 #3306 is the port used for mySQL servers
+          ToPort: 3306
+          CidrIp: 0.0.0.0/0
+  #EC2 instance in Public Subnet 1
+  PublicWebServerInstance1:
+    Type: AWS::EC2::Instance
+    Properties: 
+      InstanceType: t2.micro
+      KeyName: !Ref KeyName
+      ImageId: !Ref AMItoUse
+      NetworkInterfaces: 
+          - AssociatePublicIpAddress: true
+            DeviceIndex: "0"
+            GroupSet: 
+              - !Ref SecurityGroupPublic
+            #SubnetId: !ImportValue "PubSubnet1"
+            SubnetId: !Ref PublicSubnet1Ref
+            #SubnetId:  !Ref PublicSubnet1
+      UserData:
+          Fn::Base64: !Sub |
+            #!/bin/bash
+            yum update -y
+            yum install -y httpd
+            systemctl start httpd
+  #EIPPubWebServerInstance1:
+  #  Type: 'AWS::EC2::EIP'
+  #EIPAssocPubWebServerInstance1:
+  #  Type: 'AWS::EC2::EIPAssociation'
+  #  Properties:
+  #    InstanceId: !Ref PublicWebServerInstance1
+  #    EIP: !Ref EIPPubWebServerInstance1
+  #EC2 instance in Public Subnet 2
+  PublicWebServerInstance2:
+    Type: AWS::EC2::Instance
+    Properties: 
+      InstanceType: t2.micro
+      KeyName: !Ref KeyName
+      ImageId: !Ref AMItoUse
+      NetworkInterfaces: 
+          - AssociatePublicIpAddress: true
+            DeviceIndex: "0"
+            GroupSet: 
+              - !Ref SecurityGroupPublic
+            #SubnetId: !ImportValue "PubSubnet2"
+            SubnetId: !Ref PublicSubnet2Ref
+            #SubnetId: !Ref PublicSubnet2
+      UserData:
+          Fn::Base64: !Sub |
+            #!/bin/bash
+            yum update -y
+            yum install -y httpd
+            systemctl start httpd
+  #EIPPubWebServerInstance2:
+  #  Type: 'AWS::EC2::EIP'
+  #EIPAssocPubWebServerInstance2:
+  #  Type: 'AWS::EC2::EIPAssociation'
+  #  Properties:
+  #    InstanceId: !Ref PublicWebServerInstance2
+  #    EIP: !Ref EIPPubWebServerInstance2
+  #EC2 instance in private Subnet 1
+  PrivateWebServerInstance1:
+    Type: AWS::EC2::Instance
+    Properties: 
+      InstanceType: t2.micro
+      KeyName: !Ref KeyName
+      ImageId: !Ref AMItoUse
+      NetworkInterfaces: 
+          - AssociatePublicIpAddress: false
+            DeviceIndex: "0"
+            GroupSet: 
+              - !Ref SecurityGroupPublic
+            #SubnetId: !ImportValue "PrivSubnet1"
+            SubnetId: !Ref PrivateSubnet1Ref
+            #SubnetId: !Ref PrivateSubnet1
+      UserData:
+          Fn::Base64: !Sub |
+            #!/bin/bash
+            yum update -y
+            yum install -y httpd
+            systemctl start httpd
+  #Not listing EIP for this instance
+  #EC2 instance in private Subnet 2
+  PrivateWebServerInstance2:
+    Type: AWS::EC2::Instance
+    Properties: 
+      InstanceType: t2.micro
+      KeyName: !Ref KeyName
+      ImageId: !Ref AMItoUse
+      NetworkInterfaces: 
+          - AssociatePublicIpAddress: false
+            DeviceIndex: "0"
+            GroupSet: 
+              - !Ref SecurityGroupPublic
+            #SubnetId: !ImportValue "PrivSubnet2"
+            SubnetId: !Ref "PrivateSubnet2Ref"
+            #SubnetId: !Ref PrivateSubnet2
+      UserData:
+          Fn::Base64: !Sub |
+            #!/bin/bash
+            yum update -y
+            yum install -y httpd
+            systemctl start httpd
+  #Not listing EIP for this instance
+
+  #May need to list instances for the storage environment

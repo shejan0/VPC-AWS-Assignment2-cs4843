@@ -1,0 +1,87 @@
+Description: >
+  Setup a storage and database environment inside of the private subnet
+Parameters:
+  KeyName:
+      Description: Name of an existing EC2 KeyPair to enable SSH access to the instances
+      Type: 'AWS::EC2::KeyPair::KeyName'
+      ConstraintDescription: must be the name of an existing EC2 KeyPair.
+  AMItoUse:
+      Description: AMI to use for our base image
+      Type: String
+  #The following are outputs from the previous creation, there is a way to dynamically grab them using SSM, but its really complicated
+  NetworkVPC:
+    Description: VPC from previous creation
+    Type: String
+  PrivateSubnet1Ref:
+    Description: Private Subnet 1 from previous creation
+    Type: String
+  PrivateSubnet2Ref:
+    Description: Private Subnet 2 from previous creation
+    Type: String
+Resources:
+  SecurityGroupDatabase:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Only port 3306 for MySQL server interactions
+      VpcId: !Ref NetworkVPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 3306
+        ToPort: 3306
+        CidrIp: 0.0.0.0/0
+  DatabaseServer1:
+    Type: AWS::EC2::Instance
+    Properties: 
+      InstanceType: t2.micro
+      KeyName: !Ref KeyName
+      ImageId: !Ref AMItoUse
+      NetworkInterfaces: 
+          - AssociatePublicIpAddress: true
+            DeviceIndex: "0"
+            GroupSet: 
+              - !Ref SecurityGroupDatabase
+            #SubnetId: !ImportValue "PubSubnet1"
+            SubnetId: !Ref PrivateSubnet1Ref
+            #SubnetId:  !Ref PublicSubnet1
+      UserData:
+          #In order to change the directory of mysql server you must edit a file to do so, which is not possible before starting
+          Fn::Base64: !Sub |
+            #!/bin/bash
+            sudo mkfs -f xfs /dev/sdk
+            yum update -y
+            yum install -y mysql-community-server
+            systemctl enable mysqld
+            systemctl start mysqld
+          #would need to change the "datadir" link in /etc/mysql/mysql.conf.d/mysql.conf to somewhere on /dev/sdk
+      BlockDeviceMappings:
+      - DeviceName: "/dev/sdk"
+        Ebs:
+          VolumeSize: 10
+  DatabaseServer2:
+    Type: AWS::EC2::Instance
+    Properties: 
+      InstanceType: t2.micro
+      KeyName: !Ref KeyName
+      ImageId: !Ref AMItoUse
+      NetworkInterfaces: 
+          - AssociatePublicIpAddress: true
+            DeviceIndex: "0"
+            GroupSet: 
+              - !Ref SecurityGroupDatabase
+            #SubnetId: !ImportValue "PubSubnet1"
+            SubnetId: !Ref PrivateSubnet2Ref
+            #SubnetId:  !Ref PublicSubnet1
+      UserData:
+          #In order to change the directory of mysql server you must edit a file to do so, which is not possible before starting
+          Fn::Base64: !Sub |
+            #!/bin/bash
+            sudo mkfs -f xfs /dev/xvdk
+            yum update -y
+            yum install -y mysql-community-server
+            systemctl enable mysqld
+            systemctl start mysqld
+          #would need to change the "datadir" link in /etc/mysql/mysql.conf.d/mysql.conf to somewhere on /dev/xvdk
+      BlockDeviceMappings:
+      - DeviceName: "/dev/sdk"
+        Ebs:
+          VolumeSize: 10
